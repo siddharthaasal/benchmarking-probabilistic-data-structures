@@ -3,8 +3,8 @@ import { isIPPossiblyBlocked } from "../services/bloomFilter.js";
 
 const router = express.Router();
 
-router.get("/is-blocked", async (req, res) => {
-    const { ip } = req.query;
+router.get("/is-blocked/:ip", async (req, res) => {
+    const ip = req.params.ip;
 
     if (!ip) {
         return res.status(400).json({ error: "Missing 'ip' query parameter" });

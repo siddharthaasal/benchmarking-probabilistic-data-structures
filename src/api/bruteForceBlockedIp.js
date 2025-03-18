@@ -3,9 +3,9 @@ import { isIpBlocked } from "../services/bruteForceBlockedIp.js";
 
 const router = express.Router();
 
-router.get("/is-blocked", async (req, res) => {
+router.get("/is-blocked/:ip", async (req, res) => {
     try {
-        const { ip } = req.query;
+        const ip = req.params.ip;
         if (!ip) {
             return res.status(400).json({ error: "IP address is required" });
         }

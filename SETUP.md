@@ -63,7 +63,10 @@ CREATE TABLE blocked_ips (
     timestamp TIMESTAMPTZ DEFAULT NOW()
 );
 
-
+docker run -p 6379:6379 -it --rm redis/redis-stack-server:latest
 node scripts/generateIpData.js --count 5000 --path ./data/blocked_ips.json
 node scripts/loadBlockedIpData.js
 node scripts/seedBf.js
+curl http://localhost:3000/bruteForceBlockedIp/is-blocked/10.90.68.223
+curl http://localhost:3000/bloom/is-blocked/10.90.68.222
+node src/benchmarks/blockedIpBenchmark.js 
