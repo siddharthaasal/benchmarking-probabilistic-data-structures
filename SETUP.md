@@ -48,7 +48,22 @@ node scripts/seedHll.js
 curl http://localhost:3000/hll/count
 
 
+<!-- hyper log log -->
 node scripts/generateIpData.js --count 5000 --path ./data/data.json
 node scripts/loadIpData.js 
 node scripts/seedHll.js
 node ./src/benchmarks/uniqueIp/api.js 
+
+
+<!-- bloom filter -->
+
+CREATE TABLE blocked_ips (
+    id SERIAL PRIMARY KEY,
+    ip VARCHAR(45) NOT NULL UNIQUE,
+    timestamp TIMESTAMPTZ DEFAULT NOW()
+);
+
+
+node scripts/generateIpData.js --count 5000 --path ./data/blocked_ips.json
+node scripts/loadBlockedIpData.js
+node scripts/seedBf.js

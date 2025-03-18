@@ -2,16 +2,6 @@
 
 import pool from "../config/db.js";
 
-// export const insertLog = async (ip, timestamp) => {
-//     try {
-//         const query = "INSERT into ip_logs (ip, timestamp) VALUES ($1, $2)";
-//         await pool.query(query, [ip, timestamp]);
-//         return result.rowCount; // Returns 1 if successful
-//     } catch (err) {
-//         console.error("Error in services, while inserting ip: ", err);
-//         throw new Error("Database Insertion Failed");;
-//     }
-// }
 
 export const getUniqueIpCount = async () => {
     try {
