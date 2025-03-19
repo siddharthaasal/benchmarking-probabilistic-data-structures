@@ -63,6 +63,7 @@ CREATE TABLE blocked_ips (
     timestamp TIMESTAMPTZ DEFAULT NOW()
 );
 
+sudo systemctl stop redis
 docker run -p 6379:6379 -it --rm redis/redis-stack-server:latest
 node scripts/generateIpData.js --count 5000 --path ./data/blocked_ips.json
 node scripts/loadBlockedIpData.js

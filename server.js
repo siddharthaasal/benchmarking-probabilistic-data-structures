@@ -10,7 +10,7 @@ const port = 3000;
 
 app.use(express.json());
 
-app.use("/bruteBlocked", bruteForceRoutes);
+app.use("/bruteForce", bruteForceRoutes);
 app.use('/hll', ipHll);
 app.use("/bruteForceBlockedIp", bruteForceBlockedIp);
 app.use("/bloom", bloomFilterBlockedIp);
