@@ -1,11 +1,14 @@
 
 # **Benchmarking Probabilistic Data Structures**  
-This project benchmarks **probabilistic data structures** like **HyperLogLog (HLL)** against **brute-force counting** for estimating unique IP addresses in a video streaming platform.  
+This project benchmarks **probabilistic data structures** like **HyperLogLog (HLL)** and **Bloom Filters** against **brute-force methods** for:  
+1. **Unique IP Counting** in a video streaming platform  
+2. **Blocked IP Detection** for cybersecurity (DDoS attack mitigation)  
 
 ## **Features**
-- **Brute-force method (PostgreSQL)** → Exact counting  
-- **HyperLogLog (Redis)** → Approximate counting with low memory usage  
-- **Performance comparison** → Speed, accuracy, and memory usage  
+- **Brute-force method (PostgreSQL)** → Exact results (but high memory usage)  
+- **HyperLogLog (Redis)** → Approximate unique IP counting (low memory usage)  
+- **Bloom Filter (Redis)** → Fast blocked IP detection (probabilistic false positives)  
+- **Performance comparison** → Speed, accuracy, memory usage  
 
 ---
 
@@ -22,40 +25,32 @@ cd benchmarking-probabilistic-data-structures
 npm install
 ```
 
-### **3️⃣ Ensure Redis & PostgreSQL are Running**
+### **3️⃣ Start Redis Stack Server (for HLL & Bloom Filter)**
 ```sh
-# Start Redis
-redis-server  
-
-# Verify Redis is working
-redis-cli PING  
-# Expected Output: PONG  
+docker run -p 6379:6379 -it --rm redis/redis-stack-server:latest
 ```
 
----
-
-## **Running This Project**
-
-### **1️⃣ Create a Directory for IP Data**
+### **4️⃣ Ensure PostgreSQL is Running**
 ```sh
-mkdir data
-```
+# Start PostgreSQL
+sudo service postgresql start
 
-### **2️⃣ Generate IP Addresses**
-You can modify the `--count` value to generate more IPs.  
-```sh
-node scripts/generateIpData.js --count 5000 --path ./data/data.json
-```
-
----
-
-### **3️⃣ Set Up PostgreSQL**
-#### **Login to PostgreSQL**
-```sh
+# Login to PostgreSQL
 sudo -i -u postgres
 psql
 ```
 
+---
+
+## **Benchmarking Unique IP Counting**
+
+### **1️⃣ Generate IP Address Data**
+```sh
+mkdir data
+node scripts/generateIpData.js --count 5000 --path ./data/data.json
+```
+
+### **2️⃣ Set Up PostgreSQL for Unique IP Counting**
 #### **Create Database & Table**
 ```sql
 CREATE DATABASE benchmarking;
@@ -68,48 +63,83 @@ CREATE TABLE ip_logs (
 );
 ```
 
----
-
-### **4️⃣ Verify Database Connection**
-```sh
-node ./scripts/checkDb.js
-```
-
-### **5️⃣ Load Data into PostgreSQL**
+### **3️⃣ Load IP Data into PostgreSQL**
 ```sh
 node scripts/loadIpData.js
 ```
 
-**Test API for Brute-force Unique IP Count:**  
-```sh
-curl http://localhost:3000/bruteForce/unique-ip-count
-```
-
----
-
-### **6️⃣ Load Data into HyperLogLog (HLL)**
+### **4️⃣ Seed HyperLogLog (HLL) in Redis**
 ```sh
 node scripts/seedHll.js
 ```
 
-**Test API for HLL Unique IP Count:**  
+### **5️⃣ Run Unique IP Count Benchmarks**
 ```sh
+node src/benchmarks/uniqueIpBenchmark.js
+```
+
+**Test API Endpoints:**
+```sh
+# Brute-force unique IP count
+curl http://localhost:3000/bruteForce/unique-ip-count
+
+# HLL estimated unique IP count
 curl http://localhost:3000/hll/count
 ```
 
 ---
 
-## **Run Benchmarks**
+## **Benchmarking Blocked IP Detection (Bloom Filter)**
+
+### **1️⃣ Generate Blocked IP Data**
 ```sh
-node ./src/benchmarks/uniqueIp/api.js
+node scripts/generateIpData.js --count 5000 --path ./data/blocked_ips.json
+```
+
+### **2️⃣ Set Up PostgreSQL for Blocked IP Detection**
+#### **Create Database & Table**
+```sql
+CREATE DATABASE benchmarking;
+\c benchmarking;
+
+CREATE TABLE blocked_ips (
+    id SERIAL PRIMARY KEY,
+    ip VARCHAR(45) UNIQUE NOT NULL
+);
+```
+
+### **3️⃣ Load Blocked IP Data into PostgreSQL**
+```sh
+node scripts/loadBlockedIpData.js
+```
+
+### **4️⃣ Seed Bloom Filter with Blocked IPs**
+```sh
+node scripts/seedBf.js
+```
+
+### **5️⃣ Run Blocked IP Detection Benchmarks**
+```sh
+node src/benchmarks/blockedIpBenchmark.js
+```
+
+**Test API Endpoints:**
+```sh
+# Brute-force blocked IP check
+curl http://localhost:3000/bruteForceBlockedIp/is-blocked/10.90.68.223
+
+# Bloom Filter blocked IP check
+curl http://localhost:3000/bloom/is-blocked/10.90.68.222
 ```
 
 ---
 
-## **Notes**
-- **PostgreSQL is used for brute-force exact counting.**
-- **Redis HLL is used for memory-efficient approximate counting.**
-- **The benchmark measures time, accuracy, and memory usage.**  
+## **Performance Metrics**
+The benchmarking results include:
+- **Response time comparison** (Brute-force vs. Probabilistic methods)
+- **Throughput (requests/sec)**
+- **Memory usage (PostgreSQL vs. Redis)**
+- **Accuracy (false positives & false negatives in Bloom Filter)**
 
 ---
 
